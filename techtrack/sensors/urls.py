@@ -1,12 +1,14 @@
 from django.urls import path, include
+from . import views
 from rest_framework.routers import DefaultRouter
-from .views import SensorViewSet, DataViewSet, AlertViewSet
 
+# Creating a router to automatically manage URL routing for viewsets
 router = DefaultRouter()
-router.register(r'sensors', SensorViewSet)
-router.register(r'data', DataViewSet)
-router.register(r'alerts', AlertViewSet)
+router.register(r'sensors', views.SensorViewSet)
+router.register(r'data', views.DataViewSet)
+router.register(r'alerts', views.AlertViewSet)
 
+# Include the router paths and any specific paths if necessary
 urlpatterns = [
     path('', include(router.urls)),
 ]

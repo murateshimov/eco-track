@@ -1,21 +1,16 @@
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-
-
-@receiver(post_save, sender=User)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
 
 
 class Sensor(models.Model):
+    SENSOR_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('maintenance', 'Maintenance')
+    ]
     type = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
     installation_date = models.DateField()
-    status = models.CharField(max_length=20)
+    status = models.CharField(max_length=50, choices=SENSOR_STATUS_CHOICES)
 
     def __str__(self):
         return f"{self.model} - {self.type}"
@@ -23,21 +18,21 @@ class Sensor(models.Model):
 
 class Data(models.Model):
     sensor = models.ForeignKey(
-        Sensor, related_name='data', on_delete=models.CASCADE)
+        Sensor, on_delete=models.CASCADE, related_name='data')
     timestamp = models.DateTimeField(auto_now_add=True)
     pm25 = models.FloatField()
     pm10 = models.FloatField()
     co2 = models.FloatField()
 
     def __str__(self):
-        return f"Data from {self.sensor.model} on {self.timestamp}"
+        return f"Data from {self.sensor.model} on {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 class Alert(models.Model):
     sensor = models.ForeignKey(
-        Sensor, related_name='alerts', on_delete=models.CASCADE)
+        Sensor, on_delete=models.CASCADE, related_name='alerts')
     description = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
 
     def __str__(self):
-        return f"Alert for {self.sensor.model} at {self.timestamp}"
+        return f"Alert for {self.sensor.model} on {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
